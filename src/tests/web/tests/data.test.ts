@@ -1,9 +1,60 @@
 /// <reference types="mocha" />
 
 import { expect } from "chai";
-import { array, convertToDataUrl, object, string } from "../../../data/data.ts";
+import { array, clone, convertToDataUrl, object, string } from "../../../data/data.ts";
 
 describe("Data utilities", () => {
+  describe("clone", () => {
+    it("clones primitives", () => {
+      expect(clone(1)).to.equal(1);
+      expect(clone("a")).to.equal("a");
+      expect(clone(null)).to.equal(null);
+      expect(clone(undefined)).to.equal(undefined);
+    });
+
+    it("clones a simple object", () => {
+      const obj = { a: 1, b: "test" };
+      const cloned = clone(obj);
+      expect(cloned).to.deep.equal(obj);
+      expect(cloned).not.to.equal(obj);
+    });
+
+    it("clones a nested object", () => {
+      const obj = { a: 1, b: { c: 2 } };
+      const cloned = clone(obj);
+      expect(cloned).to.deep.equal(obj);
+      expect(cloned.b).not.to.equal(obj.b);
+    });
+
+    it("clones an array", () => {
+      const arr = [1, { a: 2 }];
+      const cloned = clone(arr);
+      expect(cloned).to.deep.equal(arr);
+      expect(cloned).not.to.equal(arr);
+      expect(cloned[1]).not.to.equal(arr[1]);
+    });
+
+    it("clones Map and Set", () => {
+      const map = new Map([["a", 1]]);
+      const set = new Set([1, 2]);
+      const obj = { map, set };
+      const cloned = clone(obj);
+      expect(cloned.map).to.deep.equal(map);
+      expect(cloned.map).not.to.equal(map);
+      expect(cloned.set).to.deep.equal(set);
+      expect(cloned.set).not.to.equal(set);
+    });
+
+    it("handles circular references", () => {
+      const obj: any = { a: 1 };
+      obj.self = obj;
+      const cloned = clone(obj);
+      expect(cloned.a).to.equal(1);
+      expect(cloned.self).to.equal(cloned);
+      expect(cloned).not.to.equal(obj);
+    });
+  });
+
   describe("convertToDataUrl", () => {
     it("converts a Blob to data URL", async () => {
       const blob = new Blob(["test"], { type: "text/plain" });
@@ -311,6 +362,38 @@ describe("Data utilities", () => {
         const obj = { a: 1, b: 2 };
         const result = object.pick(obj, []);
         expect(result).to.deep.equal({});
+      });
+    });
+
+    describe("walk", () => {
+      const testObj = { a: 1, b: { c: 2 }, d: [3, { e: 4 }] };
+
+      it("walks an object in pre-order (default)", () => {
+        const walker = object.walk(testObj);
+        const keys = [...walker].map((item) => item.key);
+        expect(keys).to.deep.equal([null, "a", "b", null, "c", "d", null, "0", "1", null, "e"]);
+      });
+
+      it("walks an object in post-order (leafPriority)", () => {
+        const walker = object.walk(testObj, { leafPriority: true });
+        const values = [...walker].map((item) => item.value);
+        expect(values).to.deep.equal([
+          1,
+          2,
+          { c: 2 },
+          3,
+          4,
+          { e: 4 },
+          [3, { e: 4 }],
+          { a: 1, b: { c: 2 }, d: [3, { e: 4 }] },
+        ]);
+      });
+
+      it("calls callback for each item", () => {
+        const called: any[] = [];
+        const walker = object.walk(testObj, null, (details) => called.push(details.key));
+        [...walker]; // consume the iterator
+        expect(called).to.deep.equal([null, "a", "b", null, "c", "d", null, "0", "1", null, "e"]);
       });
     });
   });

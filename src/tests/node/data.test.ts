@@ -1,5 +1,5 @@
 import { describe, it, expect } from "bun:test";
-import { array, convertToDataUrl, object, string } from "../../data/data.ts";
+import { array, clone, convertToDataUrl, object, string } from "../../data/data.ts";
 
 // Mock FileReader for Node environment
 global.FileReader = class MockFileReader {
@@ -16,6 +16,57 @@ global.FileReader = class MockFileReader {
     }, 0);
   }
 } as any;
+
+describe("clone", () => {
+  it("clones primitives", () => {
+    expect(clone(1)).toBe(1);
+    expect(clone("a")).toBe("a");
+    expect(clone(null)).toBe(null);
+    expect(clone(undefined)).toBe(undefined);
+  });
+
+  it("clones a simple object", () => {
+    const obj = { a: 1, b: "test" };
+    const cloned = clone(obj);
+    expect(cloned).toEqual(obj);
+    expect(cloned).not.toBe(obj);
+  });
+
+  it("clones a nested object", () => {
+    const obj = { a: 1, b: { c: 2 } };
+    const cloned = clone(obj);
+    expect(cloned).toEqual(obj);
+    expect(cloned.b).not.toBe(obj.b);
+  });
+
+  it("clones an array", () => {
+    const arr = [1, { a: 2 }];
+    const cloned = clone(arr);
+    expect(cloned).toEqual(arr);
+    expect(cloned).not.toBe(arr);
+    expect(cloned[1]).not.toBe(arr[1]);
+  });
+
+  it("clones Map and Set", () => {
+    const map = new Map([["a", 1]]);
+    const set = new Set([1, 2]);
+    const obj = { map, set };
+    const cloned = clone(obj);
+    expect(cloned.map).toEqual(map);
+    expect(cloned.map).not.toBe(map);
+    expect(cloned.set).toEqual(set);
+    expect(cloned.set).not.toBe(set);
+  });
+
+  it("handles circular references", () => {
+    const obj: any = { a: 1 };
+    obj.self = obj;
+    const cloned = clone(obj);
+    expect(cloned.a).toBe(1);
+    expect(cloned.self).toBe(cloned);
+    expect(cloned).not.toBe(obj);
+  });
+});
 
 describe("convertToDataUrl", () => {
   it("converts a Blob to data URL", async () => {
@@ -198,6 +249,79 @@ describe("array", () => {
 });
 
 describe("object", () => {
+  describe("deepFreeze", () => {
+    it("freezes a simple object", () => {
+      const obj = { a: 1 };
+      const frozen = object.deepFreeze(obj);
+      expect(frozen).toBe(obj);
+      expect(Object.isFrozen(frozen)).toBe(true);
+    });
+
+    it("freezes nested objects", () => {
+      const obj = { a: { b: 1 } };
+      object.deepFreeze(obj);
+      expect(Object.isFrozen(obj)).toBe(true);
+      expect(Object.isFrozen(obj.a)).toBe(true);
+    });
+
+    it("freezes arrays", () => {
+      const arr = [{ a: 1 }];
+      object.deepFreeze(arr);
+      expect(Object.isFrozen(arr)).toBe(true);
+      expect(Object.isFrozen(arr[0])).toBe(true);
+    });
+
+    it("handles circular references", () => {
+      const obj: any = { a: 1 };
+      obj.self = obj;
+      expect(() => object.deepFreeze(obj)).not.toThrow();
+      expect(Object.isFrozen(obj)).toBe(true);
+    });
+
+    it("prevents modification", () => {
+      const obj = { a: 1 };
+      object.deepFreeze(obj);
+      try {
+        (obj as any).a = 2;
+      } catch (e) {
+        // Strict mode might throw
+      }
+      expect(obj.a).toBe(1);
+    });
+  });
+
+  describe("merge", () => {
+    it("merges multiple objects", () => {
+      const result = object.merge({ a: 1 }, { b: 2 }, { c: 3 });
+      expect(result).toEqual({ a: 1, b: 2, c: 3 });
+    });
+
+    it("later objects override earlier ones", () => {
+      const result = object.merge({ a: 1 }, { a: 2 });
+      expect(result).toEqual({ a: 2 });
+    });
+
+    it("handles undefined sources", () => {
+      const result = object.merge({ a: 1 }, undefined, { b: 2 });
+      expect(result).toEqual({ a: 1, b: 2 });
+    });
+  });
+
+  describe("mergeInto", () => {
+    it("merges into the first object", () => {
+      const target = { a: 1 };
+      const result = object.mergeInto(target, { b: 2 }, { c: 3 });
+      expect(result).toBe(target as typeof result);
+      expect(result).toEqual({ a: 1, b: 2, c: 3 });
+    });
+
+    it("overrides properties in target", () => {
+      const target = { a: 1, b: 2 };
+      object.mergeInto(target, { b: 3 });
+      expect(target).toEqual({ a: 1, b: 3 });
+    });
+  });
+
   describe("omit", () => {
     it("omits specified keys", () => {
       const obj = { a: 1, b: 2, c: 3 };
@@ -244,76 +368,35 @@ describe("object", () => {
     });
   });
 
-  describe("merge", () => {
-    it("merges multiple objects", () => {
-      const result = object.merge({ a: 1 }, { b: 2 }, { c: 3 });
-      expect(result).toEqual({ a: 1, b: 2, c: 3 });
+  describe("walk", () => {
+    const testObj = { a: 1, b: { c: 2 }, d: [3, { e: 4 }] };
+
+    it("walks an object in pre-order (default)", () => {
+      const walker = object.walk(testObj);
+      const keys = [...walker].map((item) => item.key);
+      expect(keys).toEqual([null, "a", "b", null, "c", "d", null, "0", "1", null, "e"]);
     });
 
-    it("later objects override earlier ones", () => {
-      const result = object.merge({ a: 1 }, { a: 2 });
-      expect(result).toEqual({ a: 2 });
+    it("walks an object in post-order (leafPriority)", () => {
+      const walker = object.walk(testObj, { leafPriority: true });
+      const values = [...walker].map((item) => item.value);
+      expect(values).toEqual([
+        1,
+        2,
+        { c: 2 },
+        3,
+        4,
+        { e: 4 },
+        [3, { e: 4 }],
+        { a: 1, b: { c: 2 }, d: [3, { e: 4 }] },
+      ]);
     });
 
-    it("handles undefined sources", () => {
-      const result = object.merge({ a: 1 }, undefined, { b: 2 });
-      expect(result).toEqual({ a: 1, b: 2 });
-    });
-  });
-
-  describe("mergeInto", () => {
-    it("merges into the first object", () => {
-      const target = { a: 1 };
-      const result = object.mergeInto(target, { b: 2 }, { c: 3 });
-      expect(result).toBe(target as typeof result);
-      expect(result).toEqual({ a: 1, b: 2, c: 3 });
-    });
-
-    it("overrides properties in target", () => {
-      const target = { a: 1, b: 2 };
-      object.mergeInto(target, { b: 3 });
-      expect(target).toEqual({ a: 1, b: 3 });
-    });
-  });
-
-  describe("deepFreeze", () => {
-    it("freezes a simple object", () => {
-      const obj = { a: 1 };
-      const frozen = object.deepFreeze(obj);
-      expect(frozen).toBe(obj);
-      expect(Object.isFrozen(frozen)).toBe(true);
-    });
-
-    it("freezes nested objects", () => {
-      const obj = { a: { b: 1 } };
-      object.deepFreeze(obj);
-      expect(Object.isFrozen(obj)).toBe(true);
-      expect(Object.isFrozen(obj.a)).toBe(true);
-    });
-
-    it("freezes arrays", () => {
-      const arr = [{ a: 1 }];
-      object.deepFreeze(arr);
-      expect(Object.isFrozen(arr)).toBe(true);
-      expect(Object.isFrozen(arr[0])).toBe(true);
-    });
-
-    it("handles circular references", () => {
-      const obj: any = { a: 1 };
-      obj.self = obj;
-      expect(() => object.deepFreeze(obj)).not.toThrow();
-      expect(Object.isFrozen(obj)).toBe(true);
-    });
-
-    it("prevents modification", () => {
-      const obj = { a: 1 };
-      object.deepFreeze(obj);
-      try {
-        (obj as any).a = 2;
-      } catch (e) {
-        // Strict mode might throw
-      }
-      expect(obj.a).toBe(1);
+    it("calls callback for each item", () => {
+      const called: any[] = [];
+      const walker = object.walk(testObj, null, (details) => called.push(details.key));
+      [...walker]; // consume the iterator
+      expect(called).toEqual([null, "a", "b", null, "c", "d", null, "0", "1", null, "e"]);
     });
   });
 });

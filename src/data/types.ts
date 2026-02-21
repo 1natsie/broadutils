@@ -1,6 +1,20 @@
-import type { DeepFrozen, IfExtendsThenElse, Nullish, OrArray } from "../types/types.ts";
+import type {
+  CallbackFunctionOne,
+  DeepFrozen,
+  IfExtendsThenElse,
+  Nullish,
+  OrArray,
+} from "../types/types.ts";
 
+export type CloneState = { cache: WeakMap<object, object> };
 export type DataUrlSource = OrArray<Blob | ArrayBuffer | ArrayBufferView<ArrayBuffer>>;
+export type WalkConfig = { leafPriority: boolean };
+export type WalkEncounterDetails<T = any> = {
+  key: string | null;
+  value: T;
+  parent: object | null;
+  children: [PropertyKey, any][] | null;
+};
 
 export interface ArrayUtils {
   append: {
@@ -51,6 +65,11 @@ export interface ObjectUtils {
   mergeInto(...sources: unknown[]): unknown;
   omit<T extends {}, K extends keyof T>(obj: T, keys: K[]): Omit<T, K>;
   pick<T, K extends keyof T>(obj: T, keys: K[]): Pick<T, K>;
+  walk: (
+    value: object,
+    config?: WalkConfig | null,
+    callback?: CallbackFunctionOne<WalkEncounterDetails>,
+  ) => Iterable<WalkEncounterDetails>;
 }
 
 export interface StringUtils {

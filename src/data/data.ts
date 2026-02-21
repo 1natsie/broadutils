@@ -1,5 +1,14 @@
-import type { DeepFrozen } from "../types/types.ts";
-import type { ArrayUtils, DataUrlSource, ObjectUtils, StringUtils } from "./types.ts";
+import { noop } from "../misc/misc.ts";
+import type { CallbackFunctionOne, DeepFrozen } from "../types/types.ts";
+import type {
+  ArrayUtils,
+  CloneState,
+  DataUrlSource,
+  ObjectUtils,
+  StringUtils,
+  WalkConfig,
+  WalkEncounterDetails,
+} from "./types.ts";
 
 export const convertToDataUrl = async (
   source: DataUrlSource,
@@ -73,6 +82,27 @@ export const array: ArrayUtils = {
   toReversed: (value) => [...value].reverse(),
 };
 
+const createCloneState = (): CloneState => ({ cache: new WeakMap() });
+export const clone = <T>(value: T, state: CloneState = createCloneState()): T => {
+  if (value == null) return value;
+  if (typeof value !== "object") return value;
+  if (state.cache.has(value)) return state.cache.get(value) as T;
+
+  if (Array.isArray(value)) {
+    const result: any[] = [];
+    state.cache.set(value, result);
+    for (let i = 0; i < value.length; i++) result[i] = clone(value[i], state);
+    return result as T;
+  } else if (value instanceof Map) return new Map(value) as T;
+  else if (value instanceof Set) return new Set(value) as T;
+  else {
+    const result: any = {};
+    state.cache.set(value, result);
+    for (const [key, _value] of Object.entries(value)) result[key] = clone(_value, state);
+    return result as T;
+  }
+};
+
 export const object: ObjectUtils = {
   deepFreeze: (value) => {
     const stack: any[] = [value];
@@ -83,10 +113,10 @@ export const object: ObjectUtils = {
       if (!(current && typeof current === "object")) continue;
 
       if (encounterSet.has(current)) continue; // circular reference
-      
+
       Object.freeze(current);
       encounterSet.add(current);
-      
+
       if (Array.isArray(current)) stack.push(...current);
       else stack.push(...Object.values(current));
     } while (stack.length);
@@ -108,6 +138,71 @@ export const object: ObjectUtils = {
     const result = {} as Pick<T, K>;
     for (const key of keys) result[key] = obj[key];
     return result;
+  },
+  walk: function* (
+    ...args: [object, (WalkConfig | null)?, CallbackFunctionOne<WalkEncounterDetails>?]
+  ) {
+    const defaultConfig: WalkConfig = { leafPriority: false };
+    let value: object, config: WalkConfig, callback: CallbackFunctionOne<any>;
+    switch (args.length) {
+      case 1: {
+        value = args[0];
+        config = defaultConfig;
+        callback = noop;
+        break;
+      }
+      case 2: {
+        value = args[0];
+        config = args[1] && typeof args[1] === "object" ? args[1] : defaultConfig;
+        callback = noop;
+        break;
+      }
+      case 3: {
+        value = args[0];
+        config = args[1] && typeof args[1] === "object" ? args[1] : defaultConfig;
+        callback = args[2] || noop;
+      }
+    }
+
+    const entries = Object.entries(value);
+    const selfDetail = { key: null, value: value, parent: null, children: entries };
+    if (config.leafPriority) {
+      for (const [_key, _value] of entries) {
+        const isObject = typeof _value === "object";
+        const detail = {
+          key: _key,
+          value: _value,
+          parent: value,
+          children: isObject ? Object.entries(_value) : null,
+        };
+
+        if (isObject) yield* object.walk(_value, config, callback);
+        else {
+          yield detail;
+          callback(detail);
+        }
+      }
+
+      yield selfDetail;
+      callback(selfDetail);
+    } else {
+      yield selfDetail;
+      callback(selfDetail);
+
+      for (const [_key, _value] of entries) {
+        const isObject = typeof _value === "object";
+        const detail = {
+          key: _key,
+          value: _value,
+          parent: value,
+          children: isObject ? Object.entries(_value) : null,
+        };
+
+        yield detail;
+        callback(detail);
+        if (isObject) yield* object.walk(_value, config, callback);
+      }
+    }
   },
 };
 

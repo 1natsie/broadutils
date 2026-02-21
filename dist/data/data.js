@@ -1,3 +1,4 @@
+import { noop } from "../misc/misc.js";
 export const convertToDataUrl = async (source, mimeType) => {
     let blob;
     if (source instanceof Blob)
@@ -59,6 +60,33 @@ export const array = {
     },
     toReversed: (value) => [...value].reverse(),
 };
+const createCloneState = () => ({ cache: new WeakMap() });
+export const clone = (value, state = createCloneState()) => {
+    if (value == null)
+        return value;
+    if (typeof value !== "object")
+        return value;
+    if (state.cache.has(value))
+        return state.cache.get(value);
+    if (Array.isArray(value)) {
+        const result = [];
+        state.cache.set(value, result);
+        for (let i = 0; i < value.length; i++)
+            result[i] = clone(value[i], state);
+        return result;
+    }
+    else if (value instanceof Map)
+        return new Map(value);
+    else if (value instanceof Set)
+        return new Set(value);
+    else {
+        const result = {};
+        state.cache.set(value, result);
+        for (const [key, _value] of Object.entries(value))
+            result[key] = clone(_value, state);
+        return result;
+    }
+};
 export const object = {
     deepFreeze: (value) => {
         const stack = [value];
@@ -95,6 +123,67 @@ export const object = {
         for (const key of keys)
             result[key] = obj[key];
         return result;
+    },
+    walk: function* (...args) {
+        const defaultConfig = { leafPriority: false };
+        let value, config, callback;
+        switch (args.length) {
+            case 1: {
+                value = args[0];
+                config = defaultConfig;
+                callback = noop;
+                break;
+            }
+            case 2: {
+                value = args[0];
+                config = args[1] && typeof args[1] === "object" ? args[1] : defaultConfig;
+                callback = noop;
+                break;
+            }
+            case 3: {
+                value = args[0];
+                config = args[1] && typeof args[1] === "object" ? args[1] : defaultConfig;
+                callback = args[2] || noop;
+            }
+        }
+        const entries = Object.entries(value);
+        const selfDetail = { key: null, value: value, parent: null, children: entries };
+        if (config.leafPriority) {
+            for (const [_key, _value] of entries) {
+                const isObject = typeof _value === "object";
+                const detail = {
+                    key: _key,
+                    value: _value,
+                    parent: value,
+                    children: isObject ? Object.entries(_value) : null,
+                };
+                if (isObject)
+                    yield* object.walk(_value, config, callback);
+                else {
+                    yield detail;
+                    callback(detail);
+                }
+            }
+            yield selfDetail;
+            callback(selfDetail);
+        }
+        else {
+            yield selfDetail;
+            callback(selfDetail);
+            for (const [_key, _value] of entries) {
+                const isObject = typeof _value === "object";
+                const detail = {
+                    key: _key,
+                    value: _value,
+                    parent: value,
+                    children: isObject ? Object.entries(_value) : null,
+                };
+                yield detail;
+                callback(detail);
+                if (isObject)
+                    yield* object.walk(_value, config, callback);
+            }
+        }
     },
 };
 export const string = {
