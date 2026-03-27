@@ -1,5 +1,5 @@
-import { describe, it, expect } from "bun:test";
-import { noop, createDeferred, setImmediate, clearImmediate } from "../../misc/misc.ts";
+import { describe, it, expect, beforeAll, afterAll } from "bun:test";
+import { noop, createDeferred, setImmediate, clearImmediate, readFileChunks } from "../../misc/misc.ts";
 
 describe("Misc utilities", () => {
   describe("noop", () => {
@@ -82,6 +82,58 @@ describe("Misc utilities", () => {
 
     it("does nothing if immediate does not exist", () => {
       expect(clearImmediate(999999)).toBe(null);
+    });
+  });
+
+  describe("readFileChunks", () => {
+    const testFilePath = "test-chunks.txt";
+    const testData = "Hello, world! This is a test for readFileChunks.";
+
+    beforeAll(async () => {
+      await Bun.write(testFilePath, testData);
+    });
+
+    afterAll(async () => {
+      const { unlink } = await import("node:fs/promises");
+      try {
+        await unlink(testFilePath);
+      } catch (e) {}
+    });
+
+    it("reads file in chunks", async () => {
+      const chunks: Uint8Array[] = [];
+      for await (const chunk of readFileChunks(testFilePath, { chunkSize: 10 })) {
+        chunks.push(new Uint8Array(chunk));
+      }
+
+      expect(chunks.length).toBeGreaterThan(1);
+      const combined = new Uint8Array(chunks.reduce((acc, curr) => acc + curr.length, 0));
+      let offset = 0;
+      for (const chunk of chunks) {
+        combined.set(chunk, offset);
+        offset += chunk.length;
+      }
+      expect(new TextDecoder().decode(combined)).toBe(testData);
+    });
+
+    it("respects offset and length", async () => {
+      const chunks: Uint8Array[] = [];
+      for await (const chunk of readFileChunks(testFilePath, { offset: 7, length: 5 })) {
+        chunks.push(new Uint8Array(chunk));
+      }
+
+      const combined = new Uint8Array(chunks.reduce((acc, curr) => acc + curr.length, 0));
+      let offset = 0;
+      for (const chunk of chunks) {
+        combined.set(chunk, offset);
+        offset += chunk.length;
+      }
+      expect(new TextDecoder().decode(combined)).toBe("world");
+    });
+
+    it("throws RangeError for invalid offset", async () => {
+      const generator = readFileChunks(testFilePath, { offset: 1000 });
+      await expect(generator.next()).rejects.toThrow(RangeError);
     });
   });
 });

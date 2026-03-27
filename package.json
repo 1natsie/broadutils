@@ -1,8 +1,8 @@
 {
   "name": "broadutils",
-  "version": "0.0.0-alpha2",
+  "version": "0.0.0-alpha3",
   "description": "A package providing utilities covering a wide range of use cases.",
-  "homepage": "https://github.com/NullPointerInclusion/broadutils#readme",
+  "homepage": "https://github.com/1natsie/broadutils#readme",
   "author": "Oghenevwegba Obire",
   "license": "MIT",
   "keywords": [
@@ -58,10 +58,10 @@
     "vite": "^7.3.1"
   },
   "bugs": {
-    "url": "https://github.com/NullPointerInclusion/broadutils/issues"
+    "url": "https://github.com/1natsie/broadutils/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/NullPointerInclusion/broadutils.git"
+    "url": "git+https://github.com/1natsie/broadutils.git"
   }
 }
