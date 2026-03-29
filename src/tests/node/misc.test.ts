@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll, afterAll } from "bun:test";
-import { noop, createDeferred, setImmediate, clearImmediate, readFileChunks } from "../../misc/misc.ts";
+import { allowGC, preventGC, noop, createDeferred, readFileChunks } from "../../misc/misc.ts";
 
 describe("Misc utilities", () => {
   describe("noop", () => {
@@ -30,58 +30,6 @@ describe("Misc utilities", () => {
       const error = new Error("test error");
       deferred.reject(error);
       await expect(deferred.promise).rejects.toThrow("test error");
-    });
-  });
-
-  describe("setImmediate", () => {
-    it("executes the callback asynchronously", async () => {
-      let executed = false;
-      setImmediate(() => {
-        executed = true;
-      });
-      expect(executed).toBe(false);
-      await new Promise((resolve) => setTimeout(resolve, 20));
-      expect(executed).toBe(true);
-    });
-
-    it("passes arguments to the callback", async () => {
-      let receivedArgs: unknown[] = [];
-      setImmediate(
-        (arg1, arg2) => {
-          receivedArgs = [arg1, arg2];
-        },
-        ["hello", 123],
-      );
-
-      await new Promise((resolve) => setTimeout(resolve, 20));
-      expect(receivedArgs).toEqual(["hello", 123]);
-    });
-
-    it("throws error for invalid callback", () => {
-      // @ts-expect-error Testing runtime check
-      expect(() => setImmediate("not a function")).toThrow(TypeError);
-    });
-
-    it("throws error for invalid arguments", () => {
-      // @ts-expect-error Testing runtime check
-      expect(() => setImmediate(() => {}, "not an array")).toThrow(TypeError);
-    });
-  });
-
-  describe("clearImmediate", () => {
-    it("cancels the execution of the callback", async () => {
-      let executed = false;
-      const id = setImmediate(() => {
-        executed = true;
-      });
-      clearImmediate(id);
-
-      await new Promise((resolve) => setTimeout(resolve, 20));
-      expect(executed).toBe(false);
-    });
-
-    it("does nothing if immediate does not exist", () => {
-      expect(clearImmediate(999999)).toBe(null);
     });
   });
 
@@ -134,6 +82,34 @@ describe("Misc utilities", () => {
     it("throws RangeError for invalid offset", async () => {
       const generator = readFileChunks(testFilePath, { offset: 1000 });
       await expect(generator.next()).rejects.toThrow(RangeError);
+    });
+  });
+
+  describe("garbage collection utilities", () => {
+    const ref = new WeakRef({ booleanValue: true });
+    const obj = { value: ref.deref() };
+
+    describe("preventGC", () => {
+      it("prevents an object-based value from being garbage collected", () => {
+        if (!obj.value) throw new ReferenceError("Test value was pre-emptively garbage-collected.");
+        preventGC(obj.value);
+        delete obj.value;
+        Bun.gc(true);
+        expect(ref.deref()).not.toBe(undefined);
+      });
+    });
+    describe("allowGC", () => {
+      it("allows an object-based value to be garbage-collected", () => {
+        allowGC(
+          ((v) => {
+            if (v != null) return v;
+            throw new ReferenceError("Test value was pre-emptively garbage-collected.");
+          })(ref.deref()),
+        );
+
+        Bun.gc(true);
+        expect(ref.deref()).toBe(undefined);
+      });
     });
   });
 });

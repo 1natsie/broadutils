@@ -1,5 +1,21 @@
 # Changelog
 
+## v0.0.0-alpha4 - March 29, 2026
+
+### Added
+
+- **`math->hcf`**: Returns the highest common factor of a set of numbers.
+- **`math->gcd`**: Returns the greatest common divisor of a set of numbers.
+- **`math->lcm`**: Returns the lowest common multiple of a set of numbers.
+- **`misc->allowGC`**: Allows an object prevented from garbage collection by `misc->preventGC` to be garbage collected.
+- **`misc->preventGC`**: Prevents an object from being garbage collected. Use with caution!
+- **`timing->ticker`**: Provides a simple ticker for executing callbacks at specific intervals.
+
+### Changed
+
+- **`misc->setImmediate`**: Moved to `timing->setImmediate`.
+- **`misc->clearImmediate`**: Moved to `timing->clearImmediate`.
+
 ## v0.0.0-alpha3 - March 27, 2026
 
 ### Added

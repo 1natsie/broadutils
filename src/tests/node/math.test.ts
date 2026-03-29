@@ -1,5 +1,5 @@
 import { describe, it, expect } from "bun:test";
-import { min, max, clamp, constrain, convert, average } from "../../math/math.ts";
+import { min, max, clamp, constrain, convert, average, lcm, hcf } from "../../math/math.ts";
 
 describe("Math utilities", () => {
   describe("min", () => {
@@ -98,6 +98,48 @@ describe("Math utilities", () => {
     it("returns 0 for empty input", () => {
       expect(average()).toBe(0);
       expect(average([])).toBe(0);
+    });
+  });
+
+  describe("hcf", () => {
+    it("calculates the hcf of numbers spread as arguments", () => {
+      expect(hcf(18, 72, 69, 42, 15)).toBe(3);
+      expect(hcf(10, 20)).toBe(10);
+    });
+
+    it("calculates the hcf of numbers in an array", () => {
+      expect(hcf([18, 72, 69, 42, 15])).toBe(3);
+      expect(hcf([10, 20])).toBe(10);
+    });
+
+    it("calculates the hcf of a single number", () => {
+      expect(hcf(42)).toBe(42);
+    });
+
+    it("returns 1 for empty input", () => {
+      expect(hcf()).toBe(1);
+      expect(hcf([])).toBe(1);
+    });
+  });
+
+  describe("lcm", () => {
+    it("calculates the lcm of numbers spread as arguments", () => {
+      expect(lcm(1, 2, 3, 4, 5)).toBe(60);
+      expect(lcm(10, 20)).toBe(20);
+    });
+
+    it("calculates the lcm of numbers in an array", () => {
+      expect(lcm([1, 2, 3, 4, 5])).toBe(60);
+      expect(lcm([10, 20])).toBe(20);
+    });
+
+    it("calculates the lcm of a single number", () => {
+      expect(lcm(42)).toBe(42);
+    });
+
+    it("returns 1 for empty input", () => {
+      expect(lcm()).toBe(1);
+      expect(lcm([])).toBe(1);
     });
   });
 

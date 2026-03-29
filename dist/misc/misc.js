@@ -14,57 +14,16 @@ export const createDeferred = async () => {
     });
     return deferred;
 };
-export const { setImmediate, clearImmediate, } = (() => {
-    const immediateQueue = new Map();
-    const channel = new MessageChannel();
-    const dummyEntry = {
-        callback: () => { },
-        arguments: [],
-        canceled: false,
-    };
-    const drainQueue = () => {
-        const queue = [...immediateQueue.values()];
-        immediateQueue.clear();
-        awaitingDrain = false;
-        for (let i = 0; i < queue.length; ++i) {
-            const entry = queue[i];
-            if (!entry || entry.canceled)
-                continue;
-            try {
-                entry.callback(...entry.arguments);
-            }
-            catch (error) {
-                console.log("An error occured whilst executing an immediate callback.");
-                console.error(error);
-            }
-        }
-        return null;
-    };
-    let awaitingDrain = false;
-    let immediate = 0;
-    channel.port2.onmessage = drainQueue;
+export const { allowGC, preventGC } = (() => {
+    const preserveSymbol = Symbol.for(crypto.randomUUID());
+    const preserveSet = new Set();
+    Object.defineProperty(globalThis, preserveSymbol, {
+        value: preserveSet,
+        enumerable: false,
+    });
     return {
-        setImmediate: (callback, args = []) => {
-            if (typeof callback !== "function")
-                throw new TypeError("Invalid callback.");
-            if (!Array.isArray(args))
-                throw new TypeError("Invalid callback arguments.");
-            const _immediate = immediate++;
-            immediateQueue.set(_immediate, {
-                callback,
-                arguments: args,
-                canceled: false,
-            });
-            if (!awaitingDrain) {
-                channel.port1.postMessage(null);
-                awaitingDrain = true;
-            }
-            return _immediate;
-        },
-        clearImmediate: (immediate) => {
-            (immediateQueue.get(immediate) || dummyEntry).canceled = true;
-            return null;
-        },
+        allowGC: (value) => (preserveSet.delete(value), null),
+        preventGC: (value) => (preserveSet.add(value), null),
     };
 })();
 export const readFileChunks = async function* (path, options) {

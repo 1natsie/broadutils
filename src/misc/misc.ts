@@ -1,5 +1,4 @@
-import type { AnyFunction } from "../types/types.ts";
-import type { Deferred, ChunkReaderOptions, Immediate } from "./types.ts";
+import type { Deferred, ChunkReaderOptions } from "./types.ts";
 
 export const noop = (...args: unknown[]): null => null;
 
@@ -21,75 +20,19 @@ export const createDeferred = async <T>(): Promise<Deferred<T>> => {
   return deferred;
 };
 
-export const {
-  setImmediate,
-  clearImmediate,
-}: { setImmediate: Immediate["SetImmediate"]; clearImmediate: Immediate["ClearImmediate"] } =
-  (() => {
-    type Immediate = number;
-    type QueueEntry = {
-      callback: AnyFunction;
-      arguments: unknown[];
-      canceled: boolean;
-    };
+export const { allowGC, preventGC } = (() => {
+  const preserveSymbol = Symbol.for(crypto.randomUUID());
+  const preserveSet: Set<any> = new Set();
+  Object.defineProperty(globalThis, preserveSymbol, {
+    value: preserveSet,
+    enumerable: false,
+  });
 
-    const immediateQueue = new Map<Immediate, QueueEntry>();
-    const channel = new MessageChannel();
-    const dummyEntry: QueueEntry = {
-      callback: () => {},
-      arguments: [],
-      canceled: false,
-    };
-
-    const drainQueue = () => {
-      const queue = [...immediateQueue.values()];
-      immediateQueue.clear();
-      awaitingDrain = false;
-
-      for (let i = 0; i < queue.length; ++i) {
-        const entry = queue[i];
-        if (!entry || entry.canceled) continue;
-
-        try {
-          entry.callback(...entry.arguments);
-        } catch (error) {
-          console.log("An error occured whilst executing an immediate callback.");
-          console.error(error);
-        }
-      }
-
-      return null;
-    };
-
-    let awaitingDrain = false;
-    let immediate = 0;
-
-    channel.port2.onmessage = drainQueue;
-    return {
-      setImmediate: <T extends AnyFunction>(callback: T, args: unknown[] = []): Immediate => {
-        if (typeof callback !== "function") throw new TypeError("Invalid callback.");
-        if (!Array.isArray(args)) throw new TypeError("Invalid callback arguments.");
-
-        const _immediate = immediate++;
-        immediateQueue.set(_immediate, {
-          callback,
-          arguments: args,
-          canceled: false,
-        });
-
-        if (!awaitingDrain) {
-          channel.port1.postMessage(null);
-          awaitingDrain = true;
-        }
-
-        return _immediate;
-      },
-      clearImmediate: (immediate: Immediate): null => {
-        (immediateQueue.get(immediate) || dummyEntry).canceled = true;
-        return null;
-      },
-    };
-  })();
+  return {
+    allowGC: (value: any) => (preserveSet.delete(value), null),
+    preventGC: (value: any) => (preserveSet.add(value), null),
+  };
+})();
 
 export const readFileChunks = async function* (
   path: string,

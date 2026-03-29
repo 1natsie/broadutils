@@ -1,7 +1,7 @@
 /// <reference types="mocha" />
 
 import { expect } from "chai";
-import { noop, createDeferred, setImmediate, clearImmediate } from "../../../misc/misc.ts";
+import { noop, createDeferred } from "../../../misc/misc.ts";
 
 describe("Misc utilities", () => {
   describe("noop", () => {
@@ -37,58 +37,6 @@ describe("Misc utilities", () => {
       } catch (err) {
         expect(err).to.equal(error);
       }
-    });
-  });
-
-  describe("setImmediate", () => {
-    it("executes the callback asynchronously", async () => {
-      let executed = false;
-      setImmediate(() => {
-        executed = true;
-      });
-      expect(executed).to.be.false;
-      await new Promise((resolve) => setTimeout(resolve, 20));
-      expect(executed).to.be.true;
-    });
-
-    it("passes arguments to the callback", async () => {
-      let receivedArgs: unknown[] = [];
-      setImmediate(
-        (arg1, arg2) => {
-          receivedArgs = [arg1, arg2];
-        },
-        ["hello", 123],
-      );
-
-      await new Promise((resolve) => setTimeout(resolve, 20));
-      expect(receivedArgs).to.deep.equal(["hello", 123]);
-    });
-
-    it("throws error for invalid callback", () => {
-      // @ts-expect-error Testing runtime check
-      expect(() => setImmediate("not a function")).to.throw(TypeError);
-    });
-
-    it("throws error for invalid arguments", () => {
-      // @ts-expect-error Testing runtime check
-      expect(() => setImmediate(() => {}, "not an array")).to.throw(TypeError);
-    });
-  });
-
-  describe("clearImmediate", () => {
-    it("cancels the execution of the callback", async () => {
-      let executed = false;
-      const id = setImmediate(() => {
-        executed = true;
-      });
-      clearImmediate(id);
-
-      await new Promise((resolve) => setTimeout(resolve, 20));
-      expect(executed).to.be.false;
-    });
-
-    it("does nothing if immediate does not exist", () => {
-      expect(clearImmediate(999999)).to.equal(null);
     });
   });
 });

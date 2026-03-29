@@ -1,7 +1,7 @@
 /// <reference types="mocha" />
 
 import { expect } from "chai";
-import { min, max, clamp, constrain, convert, average } from "../../../math/math.ts";
+import { min, max, clamp, constrain, convert, average, hcf, lcm } from "../../../math/math.ts";
 
 describe("Math utilities", () => {
   describe("min", () => {
@@ -100,6 +100,48 @@ describe("Math utilities", () => {
     it("returns 0 for empty input", () => {
       expect(average()).to.equal(0);
       expect(average([])).to.equal(0);
+    });
+  });
+
+  describe("hcf", () => {
+    it("calculates the hcf of numbers spread as arguments", () => {
+      expect(hcf(18, 72, 69, 42, 15)).to.equal(3);
+      expect(hcf(10, 20)).to.equal(10);
+    });
+
+    it("calculates the hcf of numbers in an array", () => {
+      expect(hcf([18, 72, 69, 42, 15])).to.equal(3);
+      expect(hcf([10, 20])).to.equal(10);
+    });
+
+    it("calculates the hcf of a single number", () => {
+      expect(hcf(42)).to.equal(42);
+    });
+
+    it("returns 1 for empty input", () => {
+      expect(hcf()).to.equal(1);
+      expect(hcf([])).to.equal(1);
+    });
+  });
+
+  describe("lcm", () => {
+    it("calculates the lcm of numbers spread as arguments", () => {
+      expect(lcm(1, 2, 3, 4, 5)).to.equal(60);
+      expect(lcm(10, 20)).to.equal(20);
+    });
+
+    it("calculates the lcm of numbers in an array", () => {
+      expect(lcm([1, 2, 3, 4, 5])).to.equal(60);
+      expect(lcm([10, 20])).to.equal(20);
+    });
+
+    it("calculates the lcm of a single number", () => {
+      expect(lcm(42)).to.equal(42);
+    });
+
+    it("returns 1 for empty input", () => {
+      expect(lcm()).to.equal(1);
+      expect(lcm([])).to.equal(1);
     });
   });
 

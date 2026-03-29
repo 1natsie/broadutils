@@ -1,4 +1,12 @@
 import { nonNullable } from "../validate/validate.js";
+const getArgumentValues = (values) => {
+    if (values.length === 0)
+        return values.slice();
+    const firstValue = values[0];
+    if (typeof firstValue !== "object" || firstValue === null)
+        return values.slice();
+    return Symbol.iterator in firstValue ? [...firstValue] : values.slice();
+};
 export const min = (...values) => {
     let minNumber = null;
     let minBigInt = null;
@@ -62,18 +70,44 @@ export const constrain = (value, low, high) => {
 export const average = (...values) => {
     if (values.length === 0)
         return 0;
-    let _values;
+    const _values = getArgumentValues(values);
     let sum = 0;
     let length = 0;
-    if (typeof values[0] === "number") {
-        _values = values;
-    }
-    else {
-        _values = values[0];
-    }
     for (const value of _values)
         ((sum += value), ++length);
     return length === 0 ? 0 : sum / length;
+};
+export const hcf = (...values) => {
+    const candidates = getArgumentValues(values);
+    const lastIndex = candidates.length - 1;
+    if (candidates.length === 0)
+        return 1;
+    let i = 0;
+    let temp = 0;
+    while (i < lastIndex) {
+        if (i === candidates.length - 1)
+            break;
+        let a = candidates[i] ?? 1;
+        let b = candidates[i + 1] ?? 1;
+        while (b > 0)
+            ((a %= b), (temp = a), (a = b), (b = temp));
+        candidates[i + 1] = a;
+        i++;
+    }
+    return candidates[lastIndex] ?? 1;
+};
+export const gcd = hcf;
+export const lcm = (...values) => {
+    const candidates = getArgumentValues(values);
+    const lastIndex = candidates.length - 1;
+    if (candidates.length < 2)
+        return candidates[0] ?? 1;
+    for (let i = 0; i < lastIndex; i++) {
+        const a = candidates[i] ?? 1;
+        const b = candidates[i + 1] ?? 1;
+        candidates[i + 1] = (a * b) / hcf(a, b);
+    }
+    return candidates[lastIndex] ?? 1;
 };
 export const convert = (() => {
     const _convert = {
