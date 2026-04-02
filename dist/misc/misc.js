@@ -1,3 +1,4 @@
+/// <reference types="bun" />
 export const noop = (...args) => null;
 export const createDeferred = async () => {
     const deferred = {

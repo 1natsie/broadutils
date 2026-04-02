@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.0.0-alpha4.1 - March 29, 2026
+
+### Fixed
+
+- **`timing->*`**: Add missing exports for the timing module.
+
 ## v0.0.0-alpha4 - March 29, 2026
 
 ### Added

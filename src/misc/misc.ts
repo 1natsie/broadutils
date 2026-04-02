@@ -1,3 +1,5 @@
+/// <reference types="bun" />
+
 import type { Deferred, ChunkReaderOptions } from "./types.ts";
 
 export const noop = (...args: unknown[]): null => null;

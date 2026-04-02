@@ -38,6 +38,10 @@
       "import": "./dist/network/network.js",
       "types": "./dist/network/network.d.ts"
     },
+    "./timing": {
+      "import": "./dist/timing/timing.js",
+      "types": "./dist/timing/timing.d.ts"
+    },
     "./validate": {
       "import": "./dist/validate/validate.js",
       "types": "./dist/validate/validate.d.ts"
