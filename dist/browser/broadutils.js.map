@@ -1,0 +1,10 @@
+{
+  "version": 3,
+  "sources": ["..\\..\\src\\browser\\broadutils.ts"],
+  "sourcesContent": [
+    "export const canvas: typeof import(\"./canvas/canvas.ts\") = await import(\"./canvas/canvas.ts\");\nexport const data: typeof import(\"./data/data.ts\") = await import(\"./data/data.ts\");\nexport const math: typeof import(\"./math/math.ts\") = await import(\"./math/math.ts\");\nexport const misc: typeof import(\"./misc/misc.ts\") = await import(\"./misc/misc.ts\");\nexport const network: typeof import(\"./network/network.ts\") = await import(\"./network/network.ts\");\nexport const timing: typeof import(\"./timing/timing.ts\") = await import(\"./timing/timing.ts\");\nexport const validate: typeof import(\"./validate/validate.ts\") =\n  await import(\"./validate/validate.ts\");\n\nexport * as Types from \"./types/types.ts\";\n"
+  ],
+  "mappings": "iDAAO,IAAM,EAA8C,KAAa,8BAC3D,EAAwC,KAAa,0BACrD,EAAwC,KAAa,0BACrD,EAAwC,KAAa,0BACrD,EAAiD,KAAa,gCAC9D,EAA8C,KAAa,8BAC3D,EACX,KAAa",
+  "debugId": "FA745D9234CE25EA64756E2164756E21",
+  "names": []
+}

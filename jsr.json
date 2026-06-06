@@ -1,0 +1,29 @@
+{
+  "$schema": "https://jsr.io/schema/config-file.v1.json",
+  "name": "@1natsie/broadutils",
+  "description": "A library providing utilities covering a wide range of use cases.",
+  "version": "0.0.1",
+  "license": "MIT",
+  "exports": {
+    "./browser": "./src/browser/broadutils.ts",
+    "./browser/canvas": "./src/browser/canvas/canvas.ts",
+    "./browser/data": "./src/browser/data/data.ts",
+    "./browser/math": "./src/browser/math/math.ts",
+    "./browser/misc": "./src/browser/misc/misc.ts",
+    "./browser/network": "./src/browser/network/network.ts",
+    "./browser/timing": "./src/browser/timing/timing.ts",
+    "./browser/validate": "./src/browser/validate/validate.ts",
+    "./browser/types": "./src/browser/types/types.ts",
+    "./node": "./src/node/broadutils.ts",
+    "./node/data": "./src/node/data/data.ts",
+    "./node/filesystem": "./src/node/filesystem/filesystem.ts",
+    "./node/math": "./src/node/math/math.ts",
+    "./node/misc": "./src/node/misc/misc.ts",
+    "./node/timing": "./src/node/timing/timing.ts",
+    "./node/validate": "./src/node/validate/validate.ts",
+    "./node/types": "./src/node/types/types.ts"
+  },
+  "publish": {
+    "include": ["LICENSE", "README.md", "src/"]
+  }
+}

@@ -1,0 +1,1 @@
+{"version":3,"file":"misc.d.ts","sourceRoot":"","sources":["../../../src/node/misc/misc.ts"],"names":[],"mappings":"AAAA,OAAO,KAAK,EAAE,cAAc,EAAqB,MAAM,YAAY,CAAC;AAEpE,eAAO,MAAM,IAAI,GAAI,GAAG,MAAM,OAAO,EAAE,KAAG,IAAY,CAAC;AAEvD,eAAO,MAAM,cAAc,EAAE,cAgB5B,CAAC;AAgBF,eAAO,MAAM,OAAO,sBAAkB,CAAC;AACvC,eAAO,MAAM,SAAS,sBAAoB,CAAC;AAE3C,cAAc,YAAY,CAAC"}

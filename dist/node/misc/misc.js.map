@@ -1,0 +1,10 @@
+{
+  "version": 3,
+  "sources": ["..\\..\\src\\node\\misc\\misc.ts"],
+  "sourcesContent": [
+    "import type { CreateDeferred, Deferred, GCUtils } from \"./types.ts\";\n\nexport const noop = (...args: unknown[]): null => null;\n\nexport const createDeferred: CreateDeferred = async <T>(): Promise<Deferred<T>> => {\n  const deferred: Deferred<T> = {\n    promise: {} as Promise<T>,\n    resolve: noop,\n    reject: noop,\n  };\n\n  await new Promise((rresolved) => {\n    deferred.promise = new Promise<T>((resolve, reject) => {\n      deferred.resolve = resolve;\n      deferred.reject = reject;\n      rresolved(null);\n    });\n  });\n\n  return deferred;\n};\n\nconst gcUtils: GCUtils = (() => {\n  const preserveSymbol = Symbol(\"preserved\");\n  const preserveSet: Set<any> = new Set();\n  Object.defineProperty(globalThis, preserveSymbol, {\n    value: preserveSet,\n    enumerable: false,\n  });\n\n  return {\n    allowGC: (value: any) => (preserveSet.delete(value), null),\n    preventGC: (value: any) => (preserveSet.add(value), null),\n  };\n})();\n\nexport const allowGC = gcUtils.allowGC;\nexport const preventGC = gcUtils.preventGC;\n\nexport * from \"./types.ts\";\n"
+  ],
+  "mappings": "6BAEO,IAAM,EAAO,IAAI,IAA0B,KAErC,EAAiC,SAAqC,CACjF,IAAM,EAAwB,CAC5B,QAAS,CAAC,EACV,QAAS,EACT,OAAQ,CACV,EAUA,OARA,MAAM,IAAI,QAAQ,CAAC,IAAc,CAC/B,EAAS,QAAU,IAAI,QAAW,CAAC,EAAS,IAAW,CACrD,EAAS,QAAU,EACnB,EAAS,OAAS,EAClB,EAAU,IAAI,EACf,EACF,EAEM,GAGH,GAAoB,IAAM,CAC9B,IAAM,EAAiB,OAAO,WAAW,EACnC,EAAwB,IAAI,IAMlC,OALA,OAAO,eAAe,WAAY,EAAgB,CAChD,MAAO,EACP,WAAY,EACd,CAAC,EAEM,CACL,QAAS,CAAC,KAAgB,EAAY,OAAO,CAAK,EAAG,MACrD,UAAW,CAAC,KAAgB,EAAY,IAAI,CAAK,EAAG,KACtD,IACC,EAEU,EAAU,EAAQ,QAClB,EAAY,EAAQ",
+  "debugId": "04103E2D1CD3463964756E2164756E21",
+  "names": []
+}

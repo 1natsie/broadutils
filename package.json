@@ -1,0 +1,120 @@
+{
+  "name": "1n-broadutils",
+  "version": "0.0.1",
+  "description": "A library providing utilities covering a wide range of use cases.",
+  "homepage": "https://github.com/1natsie/broadutils#readme",
+  "author": "Oghenevwegba Obire",
+  "license": "MIT",
+  "keywords": [
+    "broadutils",
+    "utility",
+    "utils",
+    "utilities",
+    "canvas",
+    "data-manipulation",
+    "filesystem",
+    "math",
+    "misc",
+    "network",
+    "timing",
+    "validation",
+    "base64"
+  ],
+  "type": "module",
+  "scripts": {
+    "build": "bun run ./scripts/build.ts",
+    "format": "bunx prettier --write src",
+    "test:browser": "bunx vitest run --config vitest.browser.config.ts",
+    "test:node": "bunx vitest run --config vitest.node.config.ts"
+  },
+  "files": [
+    "LICENSE",
+    "README.md",
+    "dist/"
+  ],
+  "exports": {
+    "./browser": {
+      "import": "./dist/browser/broadutils.js",
+      "types": "./dist/browser/broadutils.d.ts"
+    },
+    "./browser/canvas": {
+      "import": "./dist/browser/canvas/canvas.js",
+      "types": "./dist/browser/canvas/canvas.d.ts"
+    },
+    "./browser/data": {
+      "import": "./dist/browser/data/data.js",
+      "types": "./dist/browser/data/data.d.ts"
+    },
+    "./browser/math": {
+      "import": "./dist/browser/math/math.js",
+      "types": "./dist/browser/math/math.d.ts"
+    },
+    "./browser/misc": {
+      "import": "./dist/browser/misc/misc.js",
+      "types": "./dist/browser/misc/misc.d.ts"
+    },
+    "./browser/network": {
+      "import": "./dist/browser/network/network.js",
+      "types": "./dist/browser/network/network.d.ts"
+    },
+    "./browser/timing": {
+      "import": "./dist/browser/timing/timing.js",
+      "types": "./dist/browser/timing/timing.d.ts"
+    },
+    "./browser/validate": {
+      "import": "./dist/browser/validate/validate.js",
+      "types": "./dist/browser/validate/validate.d.ts"
+    },
+    "./browser/types": {
+      "types": "./dist/browser/types/types.d.ts"
+    },
+    "./node": {
+      "import": "./dist/node/broadutils.js",
+      "types": "./dist/node/broadutils.d.ts"
+    },
+    "./node/data": {
+      "import": "./dist/node/data/data.js",
+      "types": "./dist/node/data/data.d.ts"
+    },
+    "./node/filesystem": {
+      "import": "./dist/node/filesystem/filesystem.js",
+      "types": "./dist/node/filesystem/filesystem.d.ts"
+    },
+    "./node/math": {
+      "import": "./dist/node/math/math.js",
+      "types": "./dist/node/math/math.d.ts"
+    },
+    "./node/misc": {
+      "import": "./dist/node/misc/misc.js",
+      "types": "./dist/node/misc/misc.d.ts"
+    },
+    "./node/timing": {
+      "import": "./dist/node/timing/timing.js",
+      "types": "./dist/node/timing/timing.d.ts"
+    },
+    "./node/validate": {
+      "import": "./dist/node/validate/validate.js",
+      "types": "./dist/node/validate/validate.d.ts"
+    },
+    "./node/types": {
+      "types": "./dist/node/types/types.d.ts"
+    }
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@tsconfig/node-ts": "^23.6.4",
+    "@tsconfig/node20": "^20.1.9",
+    "@types/bun": "^1.3.14",
+    "@types/node": "^25.9.1",
+    "prettier": "^3.8.1",
+    "typescript": "^6.0.2",
+    "vitest": "^4.1.8"
+  },
+  "bugs": {
+    "url": "https://github.com/1natsie/broadutils/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/1natsie/broadutils.git"
+  }
+}
