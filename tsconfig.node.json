@@ -22,6 +22,5 @@
     "moduleDetection": "force",
     "skipLibCheck": true
   },
-  "include": ["src/node"],
-  "exclude": ["src/node/_tests"]
+  "include": ["src/node"]
 }

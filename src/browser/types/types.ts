@@ -89,6 +89,24 @@ export type DeepFrozen<T> = T extends any[]
     ? DeepFrozenObject<T>
     : T;
 
+type KVSwappable = Record<string | number | symbol, string | number | symbol>;
+
+/**
+ * A type that swaps the key-value pairs in an object type. Essentially, it changes key-value
+ * to value-key. It is useful for assigning types to enum-like data structures.
+ *
+ * @example
+ * ```ts
+ * const enum = { A: 1, B: 2, C: 3 } as const
+ * type EnumType = typeof enum;
+ * type SwappedEnumType = KeyValueSwap<EnumType>;
+ * //   ^? { 1: "A", 2: "B", 3: "C" }
+ * ```
+ */
+export type KeyValueSwap<T extends KVSwappable> = {
+  [K in T[keyof T]]: { [K2 in keyof T]: T[K2] extends K ? K2 : never }[keyof T];
+};
+
 type ArrayFilterHelper<T extends unknown[], Condition, Collector extends unknown[]> = T extends [
   infer FirstElement,
   ...infer RestElements,

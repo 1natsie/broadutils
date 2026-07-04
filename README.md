@@ -50,7 +50,8 @@ The library is split into two primary environments: `./browser` and `./node`. Ea
 
 - `1n-broadutils/node` - Main entry point for Node utilities.
 - `1n-broadutils/node/data` - Data utilities
-- `1n-broadutils/node/filesystem` - File system utilities (`betterReadStream`, `which`)
+- `1n-broadutils/node/environment` - Environment utilities (`which`, `parseArgs`)
+- `1n-broadutils/node/filesystem` - File system utilities (`betterReadStream`)
 - `1n-broadutils/node/math` - Math utilities
 - `1n-broadutils/node/misc` - Miscellaneous utilities
 - `1n-broadutils/node/timing` - Timing utilities (`time`, `sleep`)
@@ -59,16 +60,22 @@ The library is split into two primary environments: `./browser` and `./node`. Ea
 
 ## Usage Examples
 
-### Node.js Filesystem Utilities
+### Node.js Environment Utilities
 
 ```typescript
-import { which, betterReadStream } from "1n-broadutils/node/filesystem";
+import { which } from "1n-broadutils/node/environment";
 
 // Locate an executable in the system PATH
 const nodePath = which("node");
 console.log(nodePath); // e.g. /usr/bin/node
 
 const multipleExes = which.many(["node", "npm"]);
+```
+
+### Node.js Filesystem Utilities
+
+```typescript
+import { betterReadStream } from "1n-broadutils/node/filesystem";
 
 // Read a file using an async generator
 for await (const chunk of betterReadStream("./large-file.txt", { chunkSize: 8192 })) {

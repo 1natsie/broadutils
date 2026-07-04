@@ -1,4 +1,6 @@
 export const data: typeof import("./data/data.ts") = await import("./data/data.ts");
+export const environment: typeof import("./environment/environment.ts") =
+  await import("./environment/environment.ts");
 export const filesystem: typeof import("./filesystem/filesystem.ts") =
   await import("./filesystem/filesystem.ts");
 export const math: typeof import("./math/math.ts") = await import("./math/math.ts");

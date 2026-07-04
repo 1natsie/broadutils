@@ -3,7 +3,7 @@ import { rm } from "node:fs/promises";
 
 await rm("dist", { recursive: true, force: true });
 
-await Promise.allSettled([
+await Promise.all([
   build({
     entrypoints: [
       "src/browser/broadutils.ts",
@@ -28,6 +28,7 @@ await Promise.allSettled([
     entrypoints: [
       "src/node/broadutils.ts",
       "src/node/data/data.ts",
+      "src/node/environment/environment.ts",
       "src/node/filesystem/filesystem.ts",
       "src/node/math/math.ts",
       "src/node/misc/misc.ts",

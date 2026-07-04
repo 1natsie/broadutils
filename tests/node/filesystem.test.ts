@@ -1,8 +1,8 @@
-import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { delimiter, join } from "node:path";
+import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { betterReadStream, which } from "../../src/node/filesystem/filesystem.ts";
+import { betterReadStream } from "../../src/node/filesystem/filesystem.ts";
 
 let tempDir = "";
 
@@ -51,44 +51,5 @@ describe("node/filesystem betterReadStream", () => {
       expect(error).to.be.instanceOf(RangeError);
       expect((error as Error).message).to.equal("Offset out of range.");
     }
-  });
-});
-
-describe("node/filesystem which", () => {
-  beforeEach(async () => {
-    tempDir = await mkdtemp(join(tmpdir(), "broadutils-"));
-  });
-
-  afterEach(async () => {
-    await rm(tempDir, { recursive: true, force: true });
-  });
-
-  it("finds executables on PATH-like environment entries", async () => {
-    const first = join(tempDir, "first");
-    const second = join(tempDir, "second");
-    await mkdir(first);
-    await mkdir(second);
-    await writeFile(join(second, "tool"), "");
-
-    expect(which("tool", { env: { PATH: [first, second].join(delimiter) } })).to.equal(
-      join(second, "tool"),
-    );
-  });
-
-  it("can include cwd in the search path", async () => {
-    await writeFile(join(tempDir, "local-tool"), "");
-
-    expect(which("local-tool", { cwd: tempDir, env: { PATH: "" } })).to.equal(
-      join(tempDir, "local-tool"),
-    );
-  });
-
-  it("finds many names and reports misses", async () => {
-    await writeFile(join(tempDir, "one"), "");
-
-    expect(which.many(["one", "missing"], { env: { PATH: tempDir } })).to.deep.equal({
-      one: join(tempDir, "one"),
-      missing: null,
-    });
   });
 });

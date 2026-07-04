@@ -1,4 +1,5 @@
 export declare const data: typeof import("./data/data.ts");
+export declare const environment: typeof import("./environment/environment.ts");
 export declare const filesystem: typeof import("./filesystem/filesystem.ts");
 export declare const math: typeof import("./math/math.ts");
 export declare const misc: typeof import("./misc/misc.ts");

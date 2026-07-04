@@ -24,6 +24,5 @@
     "moduleDetection": "force",
     "skipLibCheck": true
   },
-  "include": ["src/browser"],
-  "exclude": ["src/browser/_tests"]
+  "include": ["src/browser"]
 }

@@ -2,7 +2,7 @@
   "$schema": "https://jsr.io/schema/config-file.v1.json",
   "name": "@1natsie/broadutils",
   "description": "A library providing utilities covering a wide range of use cases.",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "license": "MIT",
   "exports": {
     "./browser": "./src/browser/broadutils.ts",
@@ -16,6 +16,7 @@
     "./browser/types": "./src/browser/types/types.ts",
     "./node": "./src/node/broadutils.ts",
     "./node/data": "./src/node/data/data.ts",
+    "./node/environment": "./src/node/environment/environment.ts",
     "./node/filesystem": "./src/node/filesystem/filesystem.ts",
     "./node/math": "./src/node/math/math.ts",
     "./node/misc": "./src/node/misc/misc.ts",
