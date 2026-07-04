@@ -1,6 +1,6 @@
 {
   "name": "1n-broadutils",
-  "version": "0.0.2",
+  "version": "0.0.2-patch.0",
   "description": "A library providing utilities covering a wide range of use cases.",
   "homepage": "https://github.com/1natsie/broadutils#readme",
   "author": "Oghenevwegba Obire",
@@ -79,6 +79,10 @@
     "./node/environment": {
       "import": "./dist/node/environment/environment.js",
       "types": "./dist/node/environment/environment.d.ts"
+    },
+    "./node/filesystem": {
+      "import": "./dist/node/filesystem/filesystem.js",
+      "types": "./dist/node/filesystem/filesystem.d.ts"
     },
     "./node/math": {
       "import": "./dist/node/math/math.js",
